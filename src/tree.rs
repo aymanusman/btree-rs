@@ -134,7 +134,7 @@ where
             },
             BTreeNode::Internal(internal) => {
                 let child_idx = match internal.keys.binary_search(key) {
-                    Ok(i) => i + 1,  // go right of equal separator
+                    Ok(i) => i + 1, // go right of equal separator
                     Err(i) => i,
                 };
                 self.search(internal.children[child_idx], key)
@@ -215,22 +215,25 @@ where
                 // Promoted separator = smallest key in right leaf.
                 let separator = right_leaf.keys[0].clone();
 
-                self.pager.write_node(child_id, &BTreeNode::Leaf(left_leaf))?;
-                self.pager.write_node(right_id, &BTreeNode::Leaf(right_leaf))?;
+                self.pager
+                    .write_node(child_id, &BTreeNode::Leaf(left_leaf))?;
+                self.pager
+                    .write_node(right_id, &BTreeNode::Leaf(right_leaf))?;
 
                 // Insert separator and new child pointer into parent.
                 let parent: BTreeNode<K, V> = self.pager.read_node(parent_id)?;
                 if let BTreeNode::Internal(mut p) = parent {
                     p.keys.insert(child_idx, separator);
                     p.children.insert(child_idx + 1, right_id);
-                    self.pager.write_node(parent_id, &BTreeNode::<K, V>::Internal(p))?;
+                    self.pager
+                        .write_node(parent_id, &BTreeNode::<K, V>::Internal(p))?;
                 }
             }
 
             BTreeNode::Internal(mut left_internal) => {
                 // For internal nodes: the median key is *moved* up.
                 let right_keys = left_internal.keys.split_off(t); // t..2t-1
-                let median = left_internal.keys.pop().unwrap();    // index t-1
+                let median = left_internal.keys.pop().unwrap(); // index t-1
                 let right_children = left_internal.children.split_off(t);
 
                 let right_id = self.pager.alloc_page()?;
@@ -248,7 +251,8 @@ where
                 if let BTreeNode::Internal(mut p) = parent {
                     p.keys.insert(child_idx, median);
                     p.children.insert(child_idx + 1, right_id);
-                    self.pager.write_node(parent_id, &BTreeNode::<K, V>::Internal(p))?;
+                    self.pager
+                        .write_node(parent_id, &BTreeNode::<K, V>::Internal(p))?;
                 }
             }
         }
@@ -261,17 +265,15 @@ where
         let node: BTreeNode<K, V> = self.pager.read_node(page_id)?;
 
         match node {
-            BTreeNode::Leaf(mut leaf) => {
-                match leaf.keys.binary_search(key) {
-                    Ok(i) => {
-                        leaf.keys.remove(i);
-                        leaf.values.remove(i);
-                        self.pager.write_node(page_id, &BTreeNode::Leaf(leaf))?;
-                        Ok(())
-                    }
-                    Err(_) => Err(BTreeError::KeyNotFound),
+            BTreeNode::Leaf(mut leaf) => match leaf.keys.binary_search(key) {
+                Ok(i) => {
+                    leaf.keys.remove(i);
+                    leaf.values.remove(i);
+                    self.pager.write_node(page_id, &BTreeNode::Leaf(leaf))?;
+                    Ok(())
                 }
-            }
+                Err(_) => Err(BTreeError::KeyNotFound),
+            },
 
             BTreeNode::Internal(mut internal) => {
                 let child_idx = match internal.keys.binary_search(key) {
@@ -299,7 +301,8 @@ where
                 self.delete_from(child_id, key)?;
 
                 // Update separator key in parent if we deleted from the left boundary.
-                self.pager.write_node(page_id, &BTreeNode::<K, V>::Internal(internal))?;
+                self.pager
+                    .write_node(page_id, &BTreeNode::<K, V>::Internal(internal))?;
                 Ok(())
             }
         }
@@ -376,7 +379,10 @@ where
                 internal.keys[child_idx - 1] = borrow_key;
                 self.pager.write_node(left_id, &BTreeNode::Leaf(left))?;
                 self.pager.write_node(child_id, &BTreeNode::Leaf(child))?;
-                self.pager.write_node(parent_page_id, &BTreeNode::<K, V>::Internal(internal.clone()))?;
+                self.pager.write_node(
+                    parent_page_id,
+                    &BTreeNode::<K, V>::Internal(internal.clone()),
+                )?;
             }
             (BTreeNode::Internal(mut left), BTreeNode::Internal(mut child)) => {
                 let sep = internal.keys[child_idx - 1].clone();
@@ -385,9 +391,14 @@ where
                 child.keys.insert(0, sep);
                 child.children.insert(0, borrow_child);
                 internal.keys[child_idx - 1] = borrow_key;
-                self.pager.write_node(left_id, &BTreeNode::<K, V>::Internal(left))?;
-                self.pager.write_node(child_id, &BTreeNode::<K, V>::Internal(child))?;
-                self.pager.write_node(parent_page_id, &BTreeNode::<K, V>::Internal(internal.clone()))?;
+                self.pager
+                    .write_node(left_id, &BTreeNode::<K, V>::Internal(left))?;
+                self.pager
+                    .write_node(child_id, &BTreeNode::<K, V>::Internal(child))?;
+                self.pager.write_node(
+                    parent_page_id,
+                    &BTreeNode::<K, V>::Internal(internal.clone()),
+                )?;
             }
             _ => {}
         }
@@ -415,7 +426,10 @@ where
                 internal.keys[child_idx] = right.keys[0].clone();
                 self.pager.write_node(child_id, &BTreeNode::Leaf(child))?;
                 self.pager.write_node(right_id, &BTreeNode::Leaf(right))?;
-                self.pager.write_node(parent_page_id, &BTreeNode::<K, V>::Internal(internal.clone()))?;
+                self.pager.write_node(
+                    parent_page_id,
+                    &BTreeNode::<K, V>::Internal(internal.clone()),
+                )?;
             }
             (BTreeNode::Internal(mut child), BTreeNode::Internal(mut right)) => {
                 let sep = internal.keys[child_idx].clone();
@@ -424,9 +438,14 @@ where
                 child.keys.push(sep);
                 child.children.push(borrow_child);
                 internal.keys[child_idx] = borrow_key;
-                self.pager.write_node(child_id, &BTreeNode::<K, V>::Internal(child))?;
-                self.pager.write_node(right_id, &BTreeNode::<K, V>::Internal(right))?;
-                self.pager.write_node(parent_page_id, &BTreeNode::<K, V>::Internal(internal.clone()))?;
+                self.pager
+                    .write_node(child_id, &BTreeNode::<K, V>::Internal(child))?;
+                self.pager
+                    .write_node(right_id, &BTreeNode::<K, V>::Internal(right))?;
+                self.pager.write_node(
+                    parent_page_id,
+                    &BTreeNode::<K, V>::Internal(internal.clone()),
+                )?;
             }
             _ => {}
         }
@@ -453,7 +472,10 @@ where
                 internal.keys.remove(sep_idx);
                 internal.children.remove(sep_idx + 1);
                 self.pager.write_node(left_id, &BTreeNode::Leaf(left))?;
-                self.pager.write_node(parent_page_id, &BTreeNode::<K, V>::Internal(internal.clone()))?;
+                self.pager.write_node(
+                    parent_page_id,
+                    &BTreeNode::<K, V>::Internal(internal.clone()),
+                )?;
             }
             (BTreeNode::Internal(mut left), BTreeNode::Internal(right)) => {
                 let sep = internal.keys.remove(sep_idx);
@@ -461,8 +483,12 @@ where
                 left.keys.push(sep);
                 left.keys.extend(right.keys);
                 left.children.extend(right.children);
-                self.pager.write_node(left_id, &BTreeNode::<K, V>::Internal(left))?;
-                self.pager.write_node(parent_page_id, &BTreeNode::<K, V>::Internal(internal.clone()))?;
+                self.pager
+                    .write_node(left_id, &BTreeNode::<K, V>::Internal(left))?;
+                self.pager.write_node(
+                    parent_page_id,
+                    &BTreeNode::<K, V>::Internal(internal.clone()),
+                )?;
             }
             _ => {}
         }

@@ -1,6 +1,6 @@
 use btree::{BTree, BTreeError};
-use tempfile::NamedTempFile;
 use std::ops::Bound;
+use tempfile::NamedTempFile;
 
 fn tmp_tree() -> (BTree<String, u64>, NamedTempFile) {
     let file = NamedTempFile::new().unwrap();
@@ -26,7 +26,10 @@ fn test_overwrite() {
 #[test]
 fn test_key_not_found() {
     let (mut tree, _f) = tmp_tree();
-    assert!(matches!(tree.get(&"ghost".to_string()), Err(BTreeError::KeyNotFound)));
+    assert!(matches!(
+        tree.get(&"ghost".to_string()),
+        Err(BTreeError::KeyNotFound)
+    ));
 }
 
 #[test]
@@ -34,13 +37,19 @@ fn test_delete() {
     let (mut tree, _f) = tmp_tree();
     tree.insert("a".to_string(), 1u64).unwrap();
     tree.delete(&"a".to_string()).unwrap();
-    assert!(matches!(tree.get(&"a".to_string()), Err(BTreeError::KeyNotFound)));
+    assert!(matches!(
+        tree.get(&"a".to_string()),
+        Err(BTreeError::KeyNotFound)
+    ));
 }
 
 #[test]
 fn test_delete_nonexistent() {
     let (mut tree, _f) = tmp_tree();
-    assert!(matches!(tree.delete(&"missing".to_string()), Err(BTreeError::KeyNotFound)));
+    assert!(matches!(
+        tree.delete(&"missing".to_string()),
+        Err(BTreeError::KeyNotFound)
+    ));
 }
 
 #[test]
@@ -62,7 +71,9 @@ fn test_sorted_order_random() {
     let mut reference = std::collections::BTreeMap::new();
     let mut x: u64 = 0xdeadbeef;
     for _ in 0..200 {
-        x = x.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        x = x
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
         let k = format!("{:016x}", x % 10000);
         let v = x % 1000;
         tree.insert(k.clone(), v).unwrap();
@@ -80,7 +91,12 @@ fn test_large_insert_no_data_loss() {
         tree.insert(format!("{:08}", i), i).unwrap();
     }
     for i in 0u64..500 {
-        assert_eq!(tree.get(&format!("{:08}", i)).unwrap(), i, "missing key {}", i);
+        assert_eq!(
+            tree.get(&format!("{:08}", i)).unwrap(),
+            i,
+            "missing key {}",
+            i
+        );
     }
 }
 
@@ -105,7 +121,8 @@ fn test_range_scan_bounded() {
     }
     // Verify range [0005, 0010) using scan_all + filter as ground truth.
     let all = tree.scan_all().unwrap();
-    let subset: Vec<_> = all.into_iter()
+    let subset: Vec<_> = all
+        .into_iter()
         .filter(|(k, _)| k.as_str() >= "0005" && k.as_str() < "0010")
         .collect();
     assert_eq!(subset.len(), 5);

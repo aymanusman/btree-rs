@@ -1,10 +1,10 @@
 //! btree-cli — a simple command-line interface to btree-rs.
 //!
 //! Usage:
-//!   btree-cli <db_file> get <key>
-//!   btree-cli <db_file> set <key> <value>
-//!   btree-cli <db_file> del <key>
-//!   btree-cli <db_file> scan [from <key>] [to <key>]
+//!   btree-cli \<db_file\> get \<key\>
+//!   btree-cli \<db_file\> set \<key\> \<value\>
+//!   btree-cli \<db_file\> del \<key\>
+//!   btree-cli \<db_file\> scan [from \<key\>] [to \<key\>]
 
 use btree::{BTree, BTreeError};
 

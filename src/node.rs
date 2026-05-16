@@ -18,7 +18,7 @@ pub enum BTreeNode<K, V> {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InternalNode<K> {
-    /// Separator keys: keys[i] is the smallest key in children[i+1].
+    /// Separator keys: keys\[i\] is the smallest key in children\[i+1\].
     pub keys: Vec<K>,
     /// Page IDs of child nodes. Always len == keys.len() + 1.
     pub children: Vec<u64>,

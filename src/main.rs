@@ -23,24 +23,46 @@ fn main() {
 
     match command.as_str() {
         "get" => {
-            if args.len() < 4 { eprintln!("Usage: get <key>"); std::process::exit(1); }
+            if args.len() < 4 {
+                eprintln!("Usage: get <key>");
+                std::process::exit(1);
+            }
             match tree.get(&args[3]) {
                 Ok(v) => println!("{}", v),
-                Err(BTreeError::KeyNotFound) => { eprintln!("(nil)"); std::process::exit(1); }
-                Err(e) => { eprintln!("Error: {}", e); std::process::exit(1); }
+                Err(BTreeError::KeyNotFound) => {
+                    eprintln!("(nil)");
+                    std::process::exit(1);
+                }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    std::process::exit(1);
+                }
             }
         }
         "set" => {
-            if args.len() < 5 { eprintln!("Usage: set <key> <value>"); std::process::exit(1); }
-            tree.insert(args[3].clone(), args[4].clone()).expect("Insert failed");
+            if args.len() < 5 {
+                eprintln!("Usage: set <key> <value>");
+                std::process::exit(1);
+            }
+            tree.insert(args[3].clone(), args[4].clone())
+                .expect("Insert failed");
             println!("OK");
         }
         "del" => {
-            if args.len() < 4 { eprintln!("Usage: del <key>"); std::process::exit(1); }
+            if args.len() < 4 {
+                eprintln!("Usage: del <key>");
+                std::process::exit(1);
+            }
             match tree.delete(&args[3]) {
                 Ok(_) => println!("OK"),
-                Err(BTreeError::KeyNotFound) => { eprintln!("(key not found)"); std::process::exit(1); }
-                Err(e) => { eprintln!("Error: {}", e); std::process::exit(1); }
+                Err(BTreeError::KeyNotFound) => {
+                    eprintln!("(key not found)");
+                    std::process::exit(1);
+                }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    std::process::exit(1);
+                }
             }
         }
         "scan" => {

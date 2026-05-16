@@ -8,15 +8,11 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: btree-rs
     steps:
       - uses: actions/checkout@v4
 
@@ -31,8 +27,8 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            btree-rs/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('btree-rs/Cargo.lock') }}
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Check formatting
         run: cargo fmt --all -- --check
@@ -43,9 +39,6 @@ jobs:
   doc:
     name: Docs
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: btree-rs
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable

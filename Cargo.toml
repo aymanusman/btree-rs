@@ -1,0 +1,25 @@
+[package]
+name = "btree-rs"
+version = "0.1.0"
+edition = "2021"
+description = "A generic B-tree with disk-based pager, cursor iteration, and range scans"
+license = "MIT"
+
+[lib]
+name = "btree"
+path = "src/lib.rs"
+
+[[bin]]
+name = "btree-cli"
+path = "src/main.rs"
+
+[dependencies]
+serde     = { version = "1", features = ["derive"] }
+bincode   = "1"
+thiserror = "1"
+
+[dev-dependencies]
+tempfile = "=3.8.1"
+
+[profile.bench]
+opt-level = 3
